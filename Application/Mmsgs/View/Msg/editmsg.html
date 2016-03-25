@@ -1,0 +1,30 @@
+<div id="content">      
+            <!-- 注意form标签的action属性 -->
+            <form action="__MODULE__/msg/editmsg/msgid/{$msg.id}/" method="post" class="mform">
+                <fieldset>
+                    <legend>您的新讨论话题</legend>
+                    <div style="text-align: center;">   
+                        <table align="center">                          
+                            <tbody><tr>
+                                <td>主题：</td>
+                                <td>
+                                    <input style="width: 400px;" value="{$msg.title}" type="text" name="title">
+                                </td>
+                            </tr>
+                            <tr>
+                                <td valign="top">正文：</td>
+                                <td>
+                                    <textarea name="content" style="width: 400px; height: 400px;">{$msg.body}</textarea>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td colspan="2" align="center">
+                                    <input name="submit" value="更新留言" type="submit">
+                                </td>
+                            </tr>
+                        </tbody></table>
+
+                    </div>
+                </fieldset>
+            </form>
+        </div>

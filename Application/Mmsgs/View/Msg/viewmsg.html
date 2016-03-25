@@ -1,0 +1,55 @@
+<div id="content">
+            <br>
+            <!-- 主贴 -->
+            <table cellspacing="0" class="forumpost">
+                <tbody><tr class="header">
+                    <td class="picture left">
+                        <img src="{$msg[0].image}" height="35" width="35">
+                    </td>
+                    <td class="topic starter">
+                        <div class="subject">{$msg[0].title}</div>
+                        <div class="author">
+                            由 {$msg[0].username}                          发表于 {$msg[0].time}                     </div>
+                    </td>                   
+                </tr>
+                <tr>
+                    <td class="left side"></td>
+                    <td class="content"> 
+                        <div class="posting">                           
+                            {$msg[0].body}                                                                   <div class="commands">
+        <a href="__MODULE__/rmsg/recipemsg/msgid/{$msg[0].id}/">回复</a>
+    </div>                      </div>
+                        
+                    </td>
+                </tr>
+
+            </tbody></table> 
+            <!-- 回帖列表 -->
+            <foreach name="msg.rmsgs" item="vo">
+            <table cellspacing="0" class="forumpost" style="margin-left: 50px;">
+    <tbody><tr class="header">
+        <td class="picture left">
+            <img src="images/2.gif" height="35" width="35">
+        </td>
+        <td class="topic">
+            <div class="subject">回复: </div>
+            <div class="author">由 {$vo.userid} 发表于 {$vo.time}</div>
+        </td>
+    </tr>
+    
+    <tr>
+        <td class="left side">&nbsp;</td>
+        <td class="content"> 
+            <div class="posting"> 
+                {$vo.body}                                <br><br>                        
+            </div>
+                            
+            <div class="commands">
+                <a href="__MODULE__/rmsg/editrmsg/rmsgid/{$vo.id}">编辑</a> | 
+                <a href="__MODULE__/rmsg/deletermsg/rmsgid/{$vo.id}">删除</a>
+            </div>      </td>
+    </tr>
+</tbody></table>  
+    </foreach>
+            <!-- 回帖列表 -->
+        </div>

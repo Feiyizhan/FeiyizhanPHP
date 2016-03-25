@@ -1,0 +1,28 @@
+<div class="login_box">
+            <div class="qrcode" ng-class="{hide: isScan}">
+                <img class="img" mm-src="https://login.weixin.qq.com/qrcode/{$uuid};"  mm-src-load="qrcodeLoad" mm-src-parallel="" mm-src-timeout="10" mm-src-retry-count="2" src="https://login.weixin.qq.com/qrcode/{$uuid}">
+                <p class="sub_title">扫描二维码登录微信</p>
+                <div class="extension">
+                    <div class="item">
+                        <i class="icon web_wechat_login_phone_icon"></i>
+                        <div class="cont">
+                            <h4 class="title">登录手机微信</h4>
+                            <p class="desc">
+                                手机上<!-- ngIf: lang == 'zh_CN' --><a ng-if="lang == 'zh_CN'" href="http://weixin.qq.com/cgi-bin/readtemplate?t=weixin_download_list&amp;lang=zh_CN" target="_blank" class="ng-scope">安装</a><!-- end ngIf: lang == 'zh_CN' --><!-- ngIf: lang == 'zh_TW' --><!-- ngIf: lang != 'zh_CN' && lang != 'zh_TW' -->并登录微信</p>
+                        </div>
+                    </div>
+                    <div class="item">
+                        <i class="icon web_wechat_login_scan_icon"></i>
+                        <div class="cont">
+                            <h4 class="title">进入“扫一扫”</h4>
+                            <p class="desc">从“发现”，进入“扫一扫”，扫码登录微信网页版</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="avatar" ng-class="{show: isScan}">
+                <img class="img" mm-src="" alt="" src="https://res.wx.qq.com/zh_CN/htmledition/v2/images/img28a2f7.gif">
+                <h4 class="sub_title">扫描成功</h4>
+                <p class="tips">请在手机上点击确认以登录</p>
+            </div>
+        </div>

@@ -1,0 +1,52 @@
+        <div id="content">
+            <div id="intro" class="generalbox box">
+                <font size="+0" face="courier new">
+                    欢迎大家来到我的留言板。<br>
+                    您有什么问题或想法，请书写下您的笔墨。<br>                 
+                    如果您有其他的想法......<br>
+                    您可以在这里和大家一起交流和探讨。<br>
+                    如果您还没有用户名，请<a href="__MODULE__/user/register">注册</a>一个用户名，体验更多精彩。<br>
+                </font>
+            </div>
+        
+            <div class="singlebutton forumaddnew">
+                 <input type="submit" onclick="window.location.href='../msg/addmsg/';" value="添加一个新讨论话题">
+            </div>
+
+            <br>
+
+            <table cellspacing="0" class="forumheaderlist">
+                    
+                <!-- 表头信息 -->
+                <tbody><tr>
+                    <th class="header topic" scope="col">留言</th>
+                    <th class="header author" colspan="1">留言人</th>
+                    <th class="header replies" scope="col">发表时间</th>
+                    <th class="header lastpost" scope="col">操作</th>
+                </tr>   
+                
+                <foreach name="lists" item="vo">
+                <tr class="">
+                    <td class="topic starter" width="40%"><a href="viewmsg/msgid/{$vo.id}">{$vo.title}</a></td>
+                    <td width="20%" style="line-height: 35px;">
+                        <img class="userpicture" src="{$vo.image}" height="35" width="35">
+                        <span>{$vo.username}</span>
+                    </td>
+                    <td class="replies" width="20%">{$vo.time}</td>
+                    <td class="lastpost" width="20%" style="text-align: center;">
+                        <a href="editmsg/msgid/{$vo.id}">编辑</a>
+                        <a href="deletemsg/msgid/{$vo.id}">删除</a>
+                    </td>
+                </tr>  
+                </foreach>    
+
+                </tbody>
+            </table>
+
+            <!-- 显示分页码（开始） -->
+            <div class="paging">
+                {$pages}
+            </div>
+            <!-- 显示分页码（结束） -->
+
+        </div>
