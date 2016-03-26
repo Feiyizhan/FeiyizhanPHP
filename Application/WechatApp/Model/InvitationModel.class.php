@@ -3,6 +3,7 @@ namespace WechatApp\Model;
 use Think\Model;
 use Org\Util\String;
 use Org\Util\Date;
+use \Think\Page;
 /**
  * 邀请码
  * @author Pluto Xu
@@ -76,7 +77,32 @@ class InvitationModel extends Model {
         $date['useDate'] = time();
         return $this->where(array('invitationCode' => $invitationCode))->save($data);
     }
+    
+    /**
+     * 修改留言
+     * @param  [type] $where 查询条件（哪些记录符合条件）
+     * @param  array  $data  修改后的记录值
+     * @return [type]        [description]
+     */
+    public function doChange($where, $data = array()){
+        // 1. 查询条件的判断
+        if (empty($where)) {
+            return false;
+        }
+//         dump($this->fields);
+        // 2. 修改
+        return $this->where($where)->save($data);
+    }
 
+    /**
+     * 返回所有记录
+     * @return mix 记录合集
+     */
+    public function getAllRecords(){
+        
+        return $this->select();
+    }
+    
     /**
      * 判断指定邀请码是否存在
      * @param  string  $invitationCode 待判断的用户名
@@ -120,8 +146,8 @@ class InvitationModel extends Model {
     }
     
     /**
-     * 生成随机的验证码到数据库。
-     * @return mix           若生成成功返回生成的验证码，否则返回false
+     * 生成随机的邀请码到数据库。
+     * @return mix           若生成成功返回生成的邀请码，否则返回false
      */
     public function generateInvitationCode(){
         $code = String::randString(32);
@@ -139,5 +165,34 @@ class InvitationModel extends Model {
             return false;
         }
         
+    }
+    
+    /**
+     * 获取当前页
+     * @return multitype:unknown NULL Ambigous <mixed, boolean, string, NULL, multitype:, unknown, object> 
+     */
+    public function getPage(){
+        // 1. 得到数据集的总数
+        $count = $this->count();
+        // 2. 创建分页类(Page)
+        $page = new Page($count, C('page_rows'));
+        // 3.0 设置分页链接信息
+        $page->setConfig('theme', "%HEADER% %FIRST% %UP_PAGE% %LINK_PAGE% %DOWN_PAGE% %END%");
+        $page->setConfig('prev', '上一页');
+        $page->setConfig('next', '下一页');
+        // 3. 获取分页码
+        $show = $page->show();
+        // 4. 获取分页记录
+                $msgs = $this->limit($page->firstRow . ',' . $page->listRows)->select();
+//         $msgs =$this->join('__USERS__ on __USERS__.id=__MSGS__.userid','LEFT')->limit($page->firstRow . ',' . $page->listRows)->select();
+        //         $users = D('users');
+        //         trace($this->join('__USERS__ on __USERS__.id=__MSGS__.userid','LEFT')->limit($page->firstRow . ',' . $page->listRows)->buildSql(),'用户信息','debug');
+        // 5. 生成返回结果
+        $results = array();
+        $results['lists'] = $msgs;
+        $results['pages'] = $show;
+        $results['pageCount'] = $page->totalPages;
+        // 6. 返回
+        return $results;
     }
 }

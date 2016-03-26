@@ -1,0 +1,45 @@
+ <div id="content">
+<table cellspacing="0" class="forumheaderlist" border="1">
+                    
+                <!-- 表头信息 -->
+                <tbody >
+                <tr>
+                    <th class="header topic" scope="col">邀请码</th>
+                    <th class="header author" colspan="1">有效期</th>
+                    <th class="header replies" scope="col">当前用户</th>
+                    <th class="header lastpost" scope="col">状态</th>
+                    <th class="header lastpost" scope="col">最近使用日期</th>
+                    <th class="header lastpost" scope="col">操作</th>
+                </tr>   
+                
+                <foreach name="lists" item="vo">
+                <tr class="">
+                    <td class="topic starter" width="20%" align="center">{$vo.invitationcode}</td>
+                    <td width="15%" align="center">
+                        <span>{$vo.validdate}</span>
+                    </td>
+                    <td class="replies" width="20%" align="center">{$vo.sessionid}</td>
+                    <td class="replies" width="10%" align="center">
+                    	<switch name="vo.status">
+						    <case value="0">未使用</case>
+						    <case value="10">已使用</case>
+						    <default />状态未知
+						</switch>
+                    </td>
+                    <td class="replies" width="15%" align="center">{$vo.usedate}</td>
+                    <td class="lastpost" width="20%" align="center">
+ 
+                    </td>
+                </tr>  
+                </foreach>    
+
+                </tbody>
+</table>
+
+<!-- 显示分页码（开始） -->
+<div class="paging">
+{$pages}
+</div>
+<!-- 显示分页码（结束） -->
+</div>
+<div><a href="/Index/update">刷新状态</a></div>

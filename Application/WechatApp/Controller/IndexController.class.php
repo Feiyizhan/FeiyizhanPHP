@@ -2,6 +2,7 @@
 namespace WechatApp\Controller;
 use Think\Controller;
 use WechatApp\Model\Captcha;
+use Org\Util\Date;
 
 class IndexController extends Controller {
 
@@ -136,5 +137,108 @@ class IndexController extends Controller {
          $this->display();
     }
     
+    
+    /**
+     * 显示邀请码状态明显
+     */
+    public function showCodeStatusDetail(){
+        // 实例化数据库操作类
+        $invitaionTable = D('invitation');
+        // 获取分页记录
+        $r = $invitaionTable->getPage();
+//                 dump($r);
+        // 分页记录和分页信息赋值给视图文件
+        $this->assign('lists', $r['lists']);
+        $this->assign('pages', $r['pages']);
+        // 指定视图标题s
+        $this->assign('view_title', '首页');
+        //         echo ("test");
+        // 显示视图
+        $this->display();
+    }
+    
+    /**
+     * 解锁
+     */
+    public function unlock($invitationCode = ''){
+        if(empty($invitationCode)){
+            //更新
+        }
+    }
+    
+    public function update(){
+        \Think\Log::write('测试日志信息开始===================','WARN');
+
+        //获取当前正在运行的邀请码
+        exec('ps -ef|grep java',$out);
+//         dump($out);
+        $loginUserList = array();  //获取当前登录的用户清单
+        $date = new Date();
+        foreach ($out as $val ){
+            $valArray = explode(" ", $val);
+//             dump($valArray);
+            $invitationCode = end($valArray);
+
+            if(strLen($invitationCode)==32){ //获取到正在运行的邀请码
+                $data=array();
+//                 dump(end($valArray));
+                //根据邀请码，读取当前登录用户
+                $filename = '/home/www/Feiyizhan/WechatApp/UUID/'.strtoupper($invitationCode).'/user.txt';
+                $weiXinUser = array(); //当前邀请码的使用用户
+                $loginDate='';
+                if(file_exists($filename)){ //如果文件存在
+                    \Think\Log::write($filename,'WARN');
+                    $handle = fopen($filename, "r");
+                    $val =fgets($handle);
+                    fclose($handle);
+                    $weiXinUser=json_decode($val);
+                    $date = new Date(filectime($filename));
+                    $date->setDate(filectime($filename));
+                    $loginDate= $date->format();
+//                     dump($weiXinUser);
+//                     dump($loginDate);
+                    $data['status'] = 10; //更新状态为锁定
+                    $data['useDate'] = $loginDate;  //更新使用日期为用户登录日期
+                    $data['sessionID']=$weiXinUser->NickName;  //更新当前邀请码的使用用户
+                    //增加到已登录用户清单
+                    $loginUserList[]=array('invitationCode'=>$invitationCode,
+                        'data' =>$data,
+                    );
+                    
+                }
+
+
+
+            }
+            
+            
+        }
+//         dump($loginUserList);
+        //获取所有的邀请码记录
+        $invitaionTable = D('invitation');
+        $records = $invitaionTable->getAllRecords();
+        foreach ($records as $data){
+            $data['status'] = 0;
+            $data['sessionID']='';
+//             $date->setDate(time());
+//             $data['useDate'] =$date->format();
+            $where = array('invitationCode' => $data['invitationcode']);
+            foreach ($loginUserList as $loginData){
+                if($data['invitationcode']==$loginData['invitationCode']){//更新Code对应的登录信息
+                    $data =$loginData['data'];
+                }
+            }
+//             dump($data);
+            $invitaionTable->doChange($where,$data);
+//             echo $invitaionTable->getLastSql();
+        
+        }
+        
+        
+        
+        \Think\Log::write('测试日志信息结束===================','WARN');
+        
+        $this->success('更新成功！', "showCodeStatusDetail");
+    }
 }
 
