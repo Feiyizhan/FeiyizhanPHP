@@ -8,9 +8,9 @@
                         <label for="InvitationCode">邀请码</label>
                     </div> 
                     <div class="form-input"> 
-                      <input type="text" name="InvitationCode" id="InvitationCode" size="15" value="" />
+                      <input type="text" name="InvitationCode" id="InvitationCode" size="40" value="" />
                       <br>
-                      <span id="userTip" class="errorTip"></span> 
+                      <span id="invitationCodeTip" class="errorTip"></span> 
                     </div> 
         
                     <div class="clearer"></div> 
@@ -20,7 +20,7 @@
                     </div> 
                     <div class="form-input"> 
                       <input type="text" name="captcha" id="captcha" size="15" value="" />
-                      <img src="__MODULE__/user/captcha/atype/register/" id="captchaImg" style="cursor: pointer; width: 100px; height: 40px;">
+                      <img src="Index/captcha/atype/register/" id="captchaImg" style="cursor: pointer; width: 100px; height: 40px;">
                       <br>
                       <span id="captchaTip" class="errorTip"></span>
                     </div> 
@@ -38,15 +38,11 @@
               
              </div> 
             <div class="signuppanel"> 
-              <h2>注册帮助</h2> 
+              <h2>帮助</h2> 
               <div class="subcontent"> 
                 <p>
-                    <b>1 用户名</b> <br> 
-                    用户名必须是字母、数字或下划线，且必须以字母开头（至少6位）<br>
-                    <b>2 密码和确认密码</b> <br> 
-                    密码和确认密码必须相同，且至少8位<br>
-                    <b>3 验证码</b> <br> 
-                    验证码不区分大小写<br>
+                    <b>当前提供邀请码的访问。微信扫描登录成功之后邀请码将被锁定，必须在手机端退出之后才能重新使用。</b> 
+                    <br>
                 </p>     
               </div> 
             </div> 

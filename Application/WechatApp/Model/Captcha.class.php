@@ -13,6 +13,7 @@ class Captcha {
         $verify = new Verify();
         // 配置参数
         $verify->length = C('captcha_length');
+        $verify->fontSize=C('captcha_fontSize');
         // 生成验证码
         $verify->entry($identify);
     }
