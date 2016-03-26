@@ -100,7 +100,7 @@ class String {
      * 默认长度6位 字母和数字混合 支持中文
      * @param string $len 长度
      * @param string $type 字串类型
-     * 0 字母 1 数字 其它 混合
+     * 0 字母 1 数字  2 大写字母 3小写字母 4中文 其它 字母和数字混合
      * @param string $addChars 额外字符
      * @return string
      */
