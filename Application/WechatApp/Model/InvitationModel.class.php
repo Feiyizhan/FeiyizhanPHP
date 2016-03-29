@@ -32,10 +32,11 @@ class InvitationModel extends Model {
         }
         
        $code = $this->where(array('invitationCode' => $invitationCode))->select();
+       \Think\Log::write(dump($code,false),'WARN');
        if(empty($code)){
            return false;
        }else{
-           return $code['status'];
+           return $code[0]['status'];
        }
     }
 

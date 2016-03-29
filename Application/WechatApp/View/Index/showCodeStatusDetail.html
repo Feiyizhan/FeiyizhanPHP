@@ -22,13 +22,20 @@
                     <td class="replies" width="10%" align="center">
                     	<switch name="vo.status">
 						    <case value="0">未使用</case>
+						    <case value="5">正在登录</case>
 						    <case value="10">已使用</case>
 						    <default />状态未知
 						</switch>
                     </td>
                     <td class="replies" width="15%" align="center">{$vo.usedate}</td>
                     <td class="lastpost" width="20%" align="center">
- 
+                    <if condition="$vo.status == 0 ">
+						<form action="/Index/check" method="post" id="login"> 
+						<input type="hidden" name="InvitationCode" id="InvitationCode" value="{$vo.invitationcode}" />
+						<input type="submit" id="submit" name="register" value="直接使用" /> 
+						</form>
+					</if>
+
                     </td>
                 </tr>  
                 </foreach>    

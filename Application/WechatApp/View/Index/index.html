@@ -1,50 +1,65 @@
-        <div class="loginbox clearfix twocolumns"> 
-          <div class="loginpanel"> 
-            <h2>请输入你的邀请码</h2> 
-              <div class="subcontent loginsub">         
-                <form action="" method="post" id="login"> 
-                  <div class="loginform"> 
-                    <div><a href="Index/showCodeStatusDetail">查询可用的邀请码</a></div>
-                    <div class="form-label">
-                        <label for="InvitationCode">邀请码</label>
-                    </div> 
-                    <div class="form-input"> 
-                      <input type="text" name="InvitationCode" id="InvitationCode" size="40" value="" />
-                      <br>
-                      <span id="invitationCodeTip" class="errorTip"></span> 
-                    </div> 
-        			
-                    <div class="clearer"></div> 
-        
-                     <div class="form-label">
-                        <label for="captcha">验证码</label>
-                    </div> 
-                    <div class="form-input"> 
-                      <input type="text" name="captcha" id="captcha" size="15" value="" />
-                      <img src="Index/captcha/atype/register/" id="captchaImg" style="cursor: pointer; width: 100px; height: 40px;">
-                      <br>
-                      <span id="captchaTip" class="errorTip"></span>
-                    </div> 
-        
-                    <div class="clearer"></div> 
-        
-                    <div class="form-input"> 
-                      <input type="submit" id="submit" name="register" value="进入" /> 
-                    </div> 
-        
-                    <div class="clearer"></div> 
-                  </div> 
-                </form> 
-              </div> 
-              
-             </div> 
-            <div class="signuppanel"> 
-              <h2>帮助</h2> 
-              <div class="subcontent"> 
+<div id="content">
+<table border="1">
+                    
+                <!-- 表头信息 -->
+                <tbody >
+                <tr>
+                    <th class="header topic" scope="col">邀请码</th>
+                    <th class="header author" colspan="1">有效期</th>
+                    <th class="header replies" scope="col">当前用户</th>
+                    <th class="header lastpost" scope="col">状态</th>
+                    <th class="header lastpost" scope="col">最近使用日期</th>
+                    <th class="header lastpost" scope="col">操作</th>
+                </tr>   
+                
+                <foreach name="lists" item="vo">
+                <tr class="">
+                    <td class="topic starter" width="20%" align="center">{$vo.invitationcode}</td>
+                    <td width="15%" align="center">
+                        <span>{$vo.validdate}</span>
+                    </td>
+                    <td class="replies" width="20%" align="center">{$vo.sessionid}</td>
+                    <td class="replies" width="10%" align="center">
+                    	<switch name="vo.status">
+						    <case value="0">未使用</case>
+						    <case value="5">正在登录</case>
+						    <case value="10">已使用</case>
+						    <default />状态未知
+						</switch>
+                    </td>
+                    <td class="replies" width="15%" align="center">{$vo.usedate}</td>
+                    <td class="lastpost" width="20%" align="center">
+                    <if condition="$vo.status == 0 ">
+						<form action="/Index/check" method="post" id="login"> 
+						<input type="hidden" name="InvitationCode" id="InvitationCode" value="{$vo.invitationcode}" />
+						<input type="submit" id="submit" name="register" value="直接使用" /> 
+						</form>
+					</if>
+
+                    </td>
+                </tr>  
+                </foreach>    
+
+                </tbody>
+</table>
+
+<!-- 显示分页码（开始） -->
+<div class="paging">
+{$pages}
+</div>
+<!-- 显示分页码（结束） -->
+</div>
+<div><a href="/Index/update">刷新状态</a></div>
+
+
+
+<div class="signuppanel"> 
+<h2>帮助</h2> 
+<div class="subcontent"> 
                 <p>
                     <b>当前提供邀请码的访问。微信扫描登录成功之后邀请码将被锁定，必须在手机端退出之后才能重新使用。</b> <br>
                     <b>如超过5分钟未成功登录，请换另一个邀请码尝试。该邀请码将在10-30分钟内自动解锁。可在查询邀请码的界面，点击刷新状态更新邀请码的状态。</b>
                 </p>     
               </div> 
             </div> 
-        </div> 
+

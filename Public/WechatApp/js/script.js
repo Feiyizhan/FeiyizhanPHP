@@ -22,6 +22,6 @@ window.onload = function() {
 	//5. 更换验证码操作的实现
 	document.getElementById('captchaImg').onclick = function() {
 		//修改验证码图片
-		this.src = "Index/captcha/atype/register/" + Math.random();
+		this.src = "/Index/captcha/atype/register/" + Math.random();
 	};
 };

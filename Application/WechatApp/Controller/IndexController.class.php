@@ -9,64 +9,89 @@ class IndexController extends Controller {
     private $STATUS_NONUSED = 0 ;  //未使用
     private $STATUS_INUSED = 10 ; //已使用
     public function index() {
+        // 实例化数据库操作类
+        $invitaionTable = D('invitation');
+        // 获取分页记录
+        $r = $invitaionTable->getPage();
+        //                 dump($r);
+        // 分页记录和分页信息赋值给视图文件
+        $this->assign('lists', $r['lists']);
+        $this->assign('pages', $r['pages']);
+        // 指定视图标题s
+        $this->assign('view_title', '首页');
+        //         echo ("test");
+        // 显示视图
+        $this->display();
+    }
+    
+    public function check(){
         if (IS_POST) {  // 判断当前HTTP请求是否为POST请求
             // 1. 创建数据表操作对象
             $invitationTable = D('invitation');
             // 2. 获取表单数据
             $invitationCode = I('post.InvitationCode');
-            $captcha = I('post.captcha');
+//             $captcha = I('post.captcha');
             // echo $userName, ', ', $userPswd, ', ', $userImage, ', ', $captcha;
             // exit;
-            if (Captcha::checkCaptcha($captcha, Captcha::REGISTER_CAPTCHA)) {  // 验证码正确
+//             if (Captcha::checkCaptcha($captcha, Captcha::REGISTER_CAPTCHA)) {  // 验证码正确
                 // 3. 检测邀请码是否存在
                 $r = $invitationTable->isInvitationCodeExists($invitationCode);
-                
-                \Think\Log::write(dump($r,false),'WARN');
                 if ($r) {
-                    \Think\Log::write('邀请码验证通过','WARN');
-                    session('invitationCode', $invitationCode);
-                    session('status',5); 
-                    $this->success('验证通过！', "Index/login");
+                    $status =$invitationTable->getStatus($invitationCode);
+                    if(0==$status){//未使用
+                        session('invitationCode', $invitationCode);
+                        $this->success('验证通过！', "/Index/login");
+                    }else{
+                        $this->error('邀请码已使用，请重新填写！',"/Index/index");
+                    }
+        
                 }else{
-                    \Think\Log::write('邀请码验证不通过','WARN');
-                    $this->error('邀请码不正确，请重新填写！');
+                    $this->error('邀请码不正确，请重新填写！',"/Index/index");
                 }
-            } else {  // 验证码不正确，要求用户重新填写
-                $this->error('验证码不正确，请重新填写！');
-            }
+//             } else {  // 验证码不正确，要求用户重新填写
+//                 $this->error('验证码不正确，请重新填写！',"/Index/index");
+//             }
         } else {  // 当前HTTP请求不是POST，说明是GET请求
             // 显示视图文件
             $this->display();
         }
     }
     
-    
 
+    /**
+     * 登录操作
+     */
     public function login() {
+        \Think\Log::write('===========登录开始=================','WARN');
         $invitationCode = session('invitationCode');
         $invitationTable = D('invitation');
         if(!empty($invitationCode)){  //检测邀请码状态
             
             $status =$invitationTable->getStatus($invitationCode);
+            \Think\Log::write(dump($invitationTable->getLastSql(),false),'WARN');
+            \Think\Log::write(dump($status,false),'WARN');
             if(false===$status){  //邀请码不存在
-                $this->error('邀请码已失效，请输入新的邀请码！',"index");
-                session('status',0);
+                session('invitationCode', null);
+                $this->error('邀请码已失效，请输入新的邀请码！',"/Index/index");
                 return;
             }else{
                 if(0==$status){ //未使用
-                    //先锁定
-                    $invitationTable->doChangeStatus($invitationCode,10);
-                    session('status',10);
+                    //设置状态为正在登录
+                    $invitationTable->doChangeStatus($invitationCode,5);
+                }else if(5==$status){
+                    session('invitationCode', null);
+                    $this->error('邀请码正在登录，请重新填写！',"/Index/index");
+                    return;
+                
                 }else{
-                    $this->error('邀请码已使用，请重新填写！',"index");
-                    session('status',0);
+                    session('invitationCode', null);
+                    $this->error('邀请码已使用，请重新填写！',"/Index/index");
                     return;
                 }
             }
             
         }else{
-            $this->error('请输入邀请码！',"index");
-            session('status',0);
+            $this->error('请输入邀请码！',"/Index/index");
             return;
         }
         
@@ -77,6 +102,11 @@ class IndexController extends Controller {
         system($cmd);
         sleep(5);
         \Think\Log::write($cmd,'WARN');
+        $filename = '/home/www/Feiyizhan/WechatApp/UUID/'.strtoupper($sessionId).'/user.txt';
+        if(file_exists($filename)){
+            unlink($filename);
+        }
+        
         $filename = '/home/www/Feiyizhan/WechatApp/UUID/'.strtoupper($sessionId).'/system.txt';
         \Think\Log::write($filename,'WARN');
         $handle = fopen($filename, "r");
@@ -89,7 +119,9 @@ class IndexController extends Controller {
         }else{
             //解锁邀请码
             $invitationTable->doChangeStatus($invitationCode,0);
-            session('status',0);
+            session('invitationCode', null);
+            $this->error('系统出错，请试！',"/Index/index");
+            return;
         }
         \Think\Log::write($uuid,'WARN');
         
@@ -185,26 +217,31 @@ class IndexController extends Controller {
                 //根据邀请码，读取当前登录用户
                 $filename = '/home/www/Feiyizhan/WechatApp/UUID/'.strtoupper($invitationCode).'/user.txt';
                 $weiXinUser = array(); //当前邀请码的使用用户
-                $loginDate='';
-                if(file_exists($filename)){ //如果文件存在
+                $date->setDate(filectime($filename));
+                $loginDate= $date->format();
+                $data['useDate'] = $loginDate;  //更新使用日期为用户登录日期
+                if(file_exists($filename)){ //如果登录用户信息文件存在，说明已登录
                     \Think\Log::write($filename,'WARN');
                     $handle = fopen($filename, "r");
                     $val =fgets($handle);
                     fclose($handle);
                     $weiXinUser=json_decode($val);
-                    $date = new Date(filectime($filename));
-                    $date->setDate(filectime($filename));
-                    $loginDate= $date->format();
+
 //                     dump($weiXinUser);
 //                     dump($loginDate);
-                    $data['status'] = 10; //更新状态为锁定
-                    $data['useDate'] = $loginDate;  //更新使用日期为用户登录日期
+                    $data['status'] = 10; //更新状态为已使用
                     $data['sessionID']=$weiXinUser->NickName;  //更新当前邀请码的使用用户
                     //增加到已登录用户清单
                     $loginUserList[]=array('invitationCode'=>$invitationCode,
                         'data' =>$data,
                     );
                     
+                }else{
+                    $data['status'] = 5; //更新状态为正在登录
+                    //更新用户信息
+                    $loginUserList[]=array('invitationCode'=>$invitationCode,
+                        'data' =>$data,
+                    );
                 }
 
 
@@ -238,7 +275,7 @@ class IndexController extends Controller {
         
         \Think\Log::write('测试日志信息结束===================','WARN');
         
-        $this->success('更新成功！', "showCodeStatusDetail");
+        $this->success('更新成功！', "/Index/index");
     }
 }
 
