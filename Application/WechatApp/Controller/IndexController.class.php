@@ -3,6 +3,7 @@ namespace WechatApp\Controller;
 use Think\Controller;
 use WechatApp\Model\Captcha;
 use Org\Util\Date;
+use WechatApp\Model\WXJSSDK;
 
 class IndexController extends Controller {
 
@@ -17,6 +18,8 @@ class IndexController extends Controller {
         // 分页记录和分页信息赋值给视图文件
         $this->assign('lists', $r['lists']);
         $this->assign('pages', $r['pages']);
+        
+        
         // 指定视图标题s
         $this->assign('view_title', '首页');
         //         echo ("test");
@@ -53,11 +56,61 @@ class IndexController extends Controller {
 //             }
         } else {  // 当前HTTP请求不是POST，说明是GET请求
             // 显示视图文件
+
             $this->display();
         }
     }
     
+    /**
+     * 微信登录
+     */
+//     public function WeXinLogin(){
+//         $jssdk = new WXJSSDK();  //使用配置文件内容
+//         $signPackage = $jssdk->GetSignPackage();
+//         $this->assign('signPackage',$signPackage);
+//         $this->debug(dump($signPackage,false));
+//         $this->display();
+        
+//     }
+    
+    
 
+    public function WeiXinLogin(){
+    
+        $access_token =session('qq_access_token');
+        $openid=session('qq_openid');
+        if(empty($access_token)||empty($openid)){
+            $oauth = new Oauth();
+            $oauth->qq_login();
+        }else{
+             
+            header("location:".U('Admin/index'));
+        }
+    }
+     
+    public function WeiXinLogout(){
+        session('qq_access_token',null);
+        session('qq_openid',null);
+        session('user',null);
+        header("location:".U('Admin/index'));
+        //          $this->index();
+    }
+     
+    public function WeiXinCallBack(){
+         
+        $oauth = new Oauth();
+        $access_token =$oauth->qq_callback();
+        $openid =$oauth->get_openid();
+        session('qq_access_token',$access_token);
+        session('qq_openid',$openid);
+        $qc = new QC($access_token,$openid);
+        $user=$qc->get_user_info($openid);
+        session('user',$user);
+        header("location:".U('Admin/index'));
+    }
+    
+    
+    
     /**
      * 登录操作
      */
@@ -96,37 +149,38 @@ class IndexController extends Controller {
         }
         
         $uuid = '';
-        $sessionId = $invitationCode;
+        $sessionId = strtoupper($invitationCode);//转换为大写
+        F($sessionId.'_UUID',null);
+        F($sessionId.'_USER',null);
+        F($sessionId.'_LOGDATE',null);
         \Think\Log::write('测试日志信息开始===================','WARN');
-        $cmd='nohup java -jar /home/www/WechatApp.jar '.$sessionId.' >/dev/null 2>&1&';
+        $cmd='nohup java -jar /home/www/WechatApp.jar '.$invitationCode.' >/dev/null 2>&1&';
         system($cmd);
-        sleep(5);
         \Think\Log::write($cmd,'WARN');
-        $filename = '/home/www/Feiyizhan/WechatApp/UUID/'.strtoupper($sessionId).'/user.txt';
-        if(file_exists($filename)){
-            unlink($filename);
+        
+        for($i=1;$i<=5;$i++){
+            $uuid =F($sessionId."_UUID");
+            if(!empty($uuid)){
+                break;
+            }else{
+                sleep(1);
+            }
         }
-        
-        $filename = '/home/www/Feiyizhan/WechatApp/UUID/'.strtoupper($sessionId).'/system.txt';
-        \Think\Log::write($filename,'WARN');
-        $handle = fopen($filename, "r");
-        $val =fgets($handle);
-        fclose($handle);
-        \Think\Log::write($val,'WARN');
-        
-        if(!empty($val)){
-            $uuid =explode(" : ", $val)[1];
-        }else{
+        \Think\Log::write('获取UUID','WARN');
+        \Think\Log::write($uuid,'WARN');
+        if(empty($uuid)){
             //解锁邀请码
             $invitationTable->doChangeStatus($invitationCode,0);
             session('invitationCode', null);
-            $this->error('系统出错，请试！',"/Index/index");
+            $this->error('系统出错，请重试！',"/Index/index");
             return;
         }
         \Think\Log::write($uuid,'WARN');
         
         \Think\Log::write('测试日志信息结束===================','WARN');
         //         $this->show(print_r($out));
+        //记录登录时间
+        F($sessionId."_LOGDATE",time());
         $this->assign('uuid',$uuid);
         $this->display();
     }
@@ -215,22 +269,20 @@ class IndexController extends Controller {
                 $data=array();
 //                 dump(end($valArray));
                 //根据邀请码，读取当前登录用户
-                $filename = '/home/www/Feiyizhan/WechatApp/UUID/'.strtoupper($invitationCode).'/user.txt';
-                $weiXinUser = array(); //当前邀请码的使用用户
-                $date->setDate(filectime($filename));
+//                 $filename = '/home/www/Feiyizhan/WechatApp/UUID/'.strtoupper($invitationCode).'/user.txt';
+                $sessionId = strtoupper($invitationCode);
+                \Think\Log::write($sessionId,'WARN');
+                $user = F($sessionId."_USER");
+                \Think\Log::write(dump($user,false),'WARN');
+//                 $weiXinUser = array(); //当前邀请码的使用用户
+                $date->setDate(F($sessionId."_LOGDATE"));
+                \Think\Log::write($date,'WARN');
                 $loginDate= $date->format();
                 $data['useDate'] = $loginDate;  //更新使用日期为用户登录日期
-                if(file_exists($filename)){ //如果登录用户信息文件存在，说明已登录
-                    \Think\Log::write($filename,'WARN');
-                    $handle = fopen($filename, "r");
-                    $val =fgets($handle);
-                    fclose($handle);
-                    $weiXinUser=json_decode($val);
-
-//                     dump($weiXinUser);
-//                     dump($loginDate);
+                if(!empty($user)){ //如果登录用户信息文件存在，说明已登录
+//                     $weiXinUser=json_decode($user);
                     $data['status'] = 10; //更新状态为已使用
-                    $data['sessionID']=$weiXinUser->NickName;  //更新当前邀请码的使用用户
+                    $data['sessionID']=$user->NickName;  //更新当前邀请码的使用用户
                     //增加到已登录用户清单
                     $loginUserList[]=array('invitationCode'=>$invitationCode,
                         'data' =>$data,
@@ -276,6 +328,14 @@ class IndexController extends Controller {
         \Think\Log::write('测试日志信息结束===================','WARN');
         
         $this->success('更新成功！', "/Index/index");
+    }
+    
+    /**
+     * 打印DEBUG信息
+     * @param unknown $log
+     */
+    private function debug($log){
+        \Think\Log::write("[调试信息]{$log}",'DEBUG');
     }
 }
 
